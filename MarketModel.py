@@ -15,16 +15,18 @@ class MarketModel:
         self.generatePriceTree()
 
     def generatePriceTree(self):
-        number_of_layers = int(self.max_maturity / self.delta_T)
+        number_of_layers = self.max_maturity / self.delta_T
 
         queue = [self.starting_node]
         
-        while queue:
+        while len(queue) > 0:
+            #print("Queue size: ", len(queue))
             active_node = queue.pop(0)
-            if active_node.layer < number_of_layers:
+            #print("Generating tree node: ", active_node.underlying_price)
+            if active_node.layer >= number_of_layers:
                 continue
-            up_node = Node(active_node.value * self.up, layer=active_node.layer + 1)
-            down_node = Node(active_node.value * self.down, layer=active_node.layer + 1)
+            up_node = Node(active_node.underlying_price * self.up, layer=active_node.layer + 1)
+            down_node = Node(active_node.underlying_price * self.down, layer=active_node.layer + 1)
             active_node.setUp(up_node)
             active_node.setDown(down_node)
             queue.append(up_node)
