@@ -1,6 +1,7 @@
 import numpy as np
 from EuropeanOptions import *
 from MarketModel import MarketModel
+from AnalysisRunner import AnalysisRunner
 
 S0 = 50
 K = 48
@@ -33,3 +34,27 @@ print("\nCall-put parity:")
 print("C - P =", E_Call_Value - E_Put_Value)
 print("S0 - K*exp(-rT) =", S0 - K * np.exp(-r * T))
 print("Difference =", abs((E_Call_Value - E_Put_Value) - (S0 - K * np.exp(-r * T))))
+
+# analiza cen dla zmieniających się parametrów
+
+baseline = {
+    'S0': S0, 'K': K, 'T': T,
+    'r': r, 'sigma': sigma, 'dt': dt
+}
+
+runner = AnalysisRunner(baseline)
+
+print("Baseline Prices:", runner.get_all_prices(baseline))
+
+grids = {
+    'S0': np.arange(30, 71, 2),
+    'K': np.arange(30, 71, 2),
+    'sigma': np.arange(0.05, 0.8, 0.05),
+    'T': np.arange(0.25, 4.26, 0.25)
+}
+
+for param, values in grids.items():
+    print(f'analysing impact of {param} on the option price...')
+    data = runner.run_parameter_impact(param, values, output_plot = True)
+
+
