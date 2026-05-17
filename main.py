@@ -1,5 +1,5 @@
 import numpy as np
-from binomial import european_option_binomial
+from EuropeanOptions import european_option_binomial
 
 
 S0 = 50
