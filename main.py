@@ -1,5 +1,14 @@
 import numpy as np
-from EuropeanOptions import european_option_binomial
+from EuropeanOptions import *
+from MarketModel import MarketModel
+
+BinomialMarketModel = MarketModel(SpotPrice=50, up=1.1, down=0.9, risk_free_rate=0.02, delta_T=1/12, max_maturity=2)
+
+EuropeanCallOption = EuropeanCallOption(Strike=48, Maturity=2)
+
+MarketModel.priceOption(EuropeanCallOption)
+
+
 
 
 S0 = 50
