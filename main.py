@@ -20,8 +20,8 @@ BinomialMarketModel = MarketModel(SpotPrice = 50,
 E_Call = EuropeanCallOption(Strike = 48, Maturity = 2)
 E_Put = EuropeanPutOption(Strike = 48, Maturity = 2)
 
-E_Call_Value = MarketModel.priceOption(E_Call)
-E_Put_Value = MarketModel.priceOption(E_Put)
+E_Call_Value = BinomialMarketModel.priceOption(E_Call)
+E_Put_Value = BinomialMarketModel.priceOption(E_Put)
 
 print("European Call:", E_Call_Value)
 print("European Put :", E_Put_Value)

@@ -10,11 +10,11 @@ class MarketModel:
         self.delta_T = delta_T
         self.max_maturity = max_maturity
         self.p = (np.exp(self.risk_free_rate * self.delta_T) - self.down) / (self.up - self.down)
+        self.starting_node = Node(self.SpotPrice, layer=0)
 
         self.generatePriceTree()
 
     def generatePriceTree(self):
-        self.starting_node = Node(self.SpotPrice, layer=0)
         number_of_layers = int(self.max_maturity / self.delta_T)
 
         queue = [self.starting_node]
@@ -30,10 +30,12 @@ class MarketModel:
             queue.append(up_node)
             queue.append(down_node)
 
-    def priceOption(self, option, node):
-        if node.left == None and node.right == None:
+    def priceOption(self, option, node = None):
+        if node == None:
+            node = self.starting_node
+        if node.up == None and node.down == None:
             return option.value(node.underlying_price)
-        if node.left == None or node.right == None:
+        if node.up == None or node.down == None:
             raise Exception("Node with only one child missing")
         
         return np.exp(-self.risk_free_rate * self.delta_T) * \
