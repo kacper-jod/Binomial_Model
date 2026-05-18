@@ -1,6 +1,6 @@
 import numpy as np
 
-class EuropeanCallOption:
+class AmericanCallOption:
     def __init__(self, Strike, Maturity):
         self.Strike = Strike
         self.Maturity = Maturity
@@ -18,10 +18,12 @@ class EuropeanCallOption:
         if node.isCorrupted():
             raise Exception("Node with only one child missing")
         
-        return np.exp(-market.risk_free_rate * market.delta_T) * \
-            (market.p * self.priceOnMarket(market,node.up) + (1-market.p) * self.priceOnMarket(market,node.down))
+        return max(
+            np.exp(-market.risk_free_rate * market.delta_T) * \
+            (market.p * self.priceOnMarket(market,node.up) + (1-market.p) * self.priceOnMarket(market,node.down)),
+            self.payoffAtPoint(node.underlying_price))
     
-class EuropeanPutOption:
+class AmericanPutOption:
     def __init__(self, Strike, Maturity):
         self.Strike = Strike
         self.Maturity = Maturity
@@ -39,7 +41,9 @@ class EuropeanPutOption:
         if node.isCorrupted():
             raise Exception("Node with only one child missing")
         
-        return np.exp(-market.risk_free_rate * market.delta_T) * \
-            (market.p * self.priceOnMarket(market,node.up) + (1-market.p) * self.priceOnMarket(market,node.down))
+        return max(
+            np.exp(-market.risk_free_rate * market.delta_T) * \
+            (market.p * self.priceOnMarket(market,node.up) + (1-market.p) * self.priceOnMarket(market,node.down)),
+            self.payoffAtPoint(node.underlying_price))
     
     

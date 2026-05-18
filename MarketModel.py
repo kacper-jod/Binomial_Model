@@ -32,14 +32,6 @@ class MarketModel:
             queue.append(up_node)
             queue.append(down_node)
 
-    def priceOption(self, option, node = None):
-        if node == None:
-            node = self.starting_node
-        if node.isLast():
-            return option.value(node.underlying_price)
-        if node.isCorrupted():
-            raise Exception("Node with only one child missing")
-        
-        return np.exp(-self.risk_free_rate * self.delta_T) * \
-            (self.p * self.priceOption(option,node.up) + (1-self.p) * self.priceOption(option,node.down))
+    def priceOption(self, option):
+        return option.priceOnMarket(self)
         
