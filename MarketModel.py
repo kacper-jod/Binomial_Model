@@ -35,9 +35,9 @@ class MarketModel:
     def priceOption(self, option, node = None):
         if node == None:
             node = self.starting_node
-        if node.up == None and node.down == None:
+        if node.isLast():
             return option.value(node.underlying_price)
-        if node.up == None or node.down == None:
+        if node.isCorrupted():
             raise Exception("Node with only one child missing")
         
         return np.exp(-self.risk_free_rate * self.delta_T) * \
