@@ -16,6 +16,7 @@ class MarketModel:
         self.number_of_layers = int(self.max_maturity / self.delta_T)
         self.tree = np.zeros(self.number_of_layers * (self.number_of_layers+1) // 2 + 1)
 
+<<<<<<< HEAD
         self.generateArrayPriceTree()
 
     def getTreeId(self, layer, number_of_elem):
@@ -61,5 +62,9 @@ class MarketModel:
                     np.exp(-self.risk_free_rate * self.delta_T) * \
                         (self.p * option_value_tree[self.getTreeId(layer+1,el_numb)] + \
                         (1-self.p) * option_value_tree[self.getTreeId(layer+1,el_numb+1)])
+=======
+    def priceOption(self, option):
+        return option.priceOnMarket(self)
+>>>>>>> 0fd0e63 (Added basic American Option logic - seems not to work for now)
         
         return option_value_tree[self.getTreeId(1,1)]
