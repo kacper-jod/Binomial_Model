@@ -15,22 +15,23 @@ class MarketModel:
         self.generatePriceTree()
 
     def generatePriceTree(self):
-        number_of_layers = self.max_maturity / self.delta_T
+        number_of_layers = int(self.max_maturity / self.delta_T)
 
-        queue = [self.starting_node]
-        
-        while len(queue) > 0:
-            #print("Queue size: ", len(queue))
-            active_node = queue.pop(0)
-            #print("Generating tree node: ", active_node.underlying_price)
-            if active_node.layer >= number_of_layers:
-                continue
-            up_node = Node(active_node.underlying_price * self.up, layer=active_node.layer + 1)
-            down_node = Node(active_node.underlying_price * self.down, layer=active_node.layer + 1)
-            active_node.setUp(up_node)
-            active_node.setDown(down_node)
-            queue.append(up_node)
-            queue.append(down_node)
+        array_of_previous_nodes = [self.starting_node]
+
+        for layer in range(1,number_of_layers + 1):
+            array_of_new_nodes = []
+
+            for i in range(layer+1):
+                array_of_new_nodes.append(Node(0,layer))
+            
+            for id in range(layer):
+                array_of_previous_nodes[id].setUp(array_of_new_nodes[id])
+                array_of_new_nodes[id].underlying_price = array_of_previous_nodes[id].underlying_price * self.up
+                array_of_previous_nodes[id].setDown(array_of_new_nodes[id+1])
+                array_of_new_nodes[id+1].underlying_price = array_of_previous_nodes[id].underlying_price * self.down
+
+            array_of_previous_nodes = array_of_new_nodes
 
     def priceOption(self, option, node = None):
         if node == None:
