@@ -8,7 +8,7 @@ K = 48
 T = 2
 sigma = 0.3
 r = 0.02
-dt = 1 / 4 #changed from 1/12, its too much for now, we have too big tree
+dt = 1 / 12
 
 BinomialMarketModel = MarketModel(SpotPrice = S0, 
                                   up = np.exp(sigma * np.sqrt(dt)),

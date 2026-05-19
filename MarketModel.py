@@ -17,6 +17,7 @@ class MarketModel:
         for i in range(self.steps + 1):
             price = self.SpotPrice * (self.up ** (self.steps - i)) * (self.down ** i)
             prices.append(price)
+        return prices
 
     def priceOption(self, option):
         terminal_prices = self.generate_terminal_prices()
