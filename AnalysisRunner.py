@@ -1,7 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from MarketModel import MarketModel
 from EuropeanOptions import EuropeanCallOption, EuropeanPutOption
+from AmericanOptions import AmericanCallOption, AmericanPutOption
+
 
 class AnalysisRunner:
     def __init__(self, baseline):
@@ -23,16 +26,17 @@ class AnalysisRunner:
     def get_all_prices(self, params):
         model = self.create_model(params)
 
-        options = { #only european options for now
+        options = {
             'Euro Call': EuropeanCallOption(Strike=params['K'], Maturity=params['T']),
             'Euro Put': EuropeanPutOption(Strike=params['K'], Maturity=params['T']),
-            # (...)
+            'American Call': AmericanCallOption(Strike=params['K'], Maturity=params['T']),
+            'American Put': AmericanPutOption(Strike=params['K'], Maturity=params['T']),
         }
 
         return {name: model.priceOption(opt) for name, opt in options.items()}
 
     def run_parameter_impact(self, param_name, values, output_plot = False):
-        results = {'Euro Call': [], 'Euro Put': []} # also only european options for now
+        results = {'Euro Call': [], 'Euro Put': [], 'American Call': [], 'American Put': []}
 
         for val in values:
             current_params = self.baseline.copy()
@@ -54,4 +58,39 @@ class AnalysisRunner:
             plt.show()
 
         return results
+
+    def plot_volatility_maturity_surface(self, values, option_type):
+        if 'T' not in values.keys():
+            raise ValueError('please provide maturity grid')
+        if 'sigma' not in values.keys():
+            raise ValueError('please provide volatility grid')
+
+        prices = np.zeros([len(values['T']), len(values['sigma'])])
+        for i, T in enumerate(values['T']):
+            for j, sigma in enumerate(values['sigma']):
+                params = self.baseline.copy()
+                params['T'] = T
+                params['sigma'] = sigma
+
+                market = self.create_model(params)
+
+                if option_type == 'Euro Call':
+                    option = EuropeanCallOption(Strike=params['K'], Maturity=params['T'])
+                elif option_type == 'Euro Put':
+                    option = EuropeanPutOption(Strike=params['K'], Maturity=params['T'])
+                elif option_type == 'American Call':
+                    option = AmericanCallOption(Strike=params['K'], Maturity=params['T'])
+                elif option_type == 'American Put':
+                    option = AmericanPutOption(Strike=params['K'], Maturity=params['T'])
+                else:
+                    raise ValueError('please provide existing option type')
+
+                prices[i, j] = market.priceOption(option)
+
+        fig, ax = plt.subplots(subplot_kw={'projection': '3d'})
+        X, Y = np.meshgrid(values['sigma'], values['T'])
+        ax.plot_surface(X, Y, prices, cmap=cm.cividis)
+
+        plt.show()
+
 
