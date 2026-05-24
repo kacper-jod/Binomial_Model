@@ -48,18 +48,6 @@ class MarketModel:
                                       self.getTreeNodeValue(layer_number-1,element_number-1) * self.down)
 
     def priceOption(self,option,layer=1,number_of_elem=1):
-        # set last layer
-        option_value_tree = np.zeros_like(self.tree)
-        for el_numb in range(1,self.number_of_layers + 1):
-            option_value_tree[self.getTreeId(self.number_of_layers, el_numb)] = \
-                option.value(self.getTreeNodeValue(self.number_of_layers, el_numb))
+        option_value_tree = option.generateOptionValueTree(self)
         
-        #set rest of the layers
-        for layer in range(self.number_of_layers - 1, 0, -1):
-            for el_numb in range(1, layer + 1):
-                option_value_tree[self.getTreeId(layer,el_numb)] = \
-                    np.exp(-self.risk_free_rate * self.delta_T) * \
-                        (self.p * option_value_tree[self.getTreeId(layer+1,el_numb)] + \
-                        (1-self.p) * option_value_tree[self.getTreeId(layer+1,el_numb+1)])
-        
-        return option_value_tree[self.getTreeId(1,1)]
+        return option_value_tree[self.getTreeId(layer,number_of_elem)]
