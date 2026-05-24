@@ -17,6 +17,9 @@ BinomialMarketModel = MarketModel(SpotPrice = S0,
                                   delta_T = dt, 
                                   max_maturity = T )
 
+# BinomialMarketModel.printTree()
+# print(BinomialMarketModel.getTreeNodeValue(7,4))
+
 E_Call = EuropeanCallOption(Strike = K, Maturity = T)
 E_Put = EuropeanPutOption(Strike = K, Maturity = T)
 

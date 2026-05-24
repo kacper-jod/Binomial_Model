@@ -12,18 +12,28 @@ class MarketModel:
         self.p = (np.exp(self.risk_free_rate * self.delta_T) - self.down) / (self.up - self.down)
         
         # Layer from 1 to number of layers, number of element from 1 to layer_number
+        # Layer X , Number Y --> Up: X+1, Y     Down: X+1, Y+1
         self.number_of_layers = int(self.max_maturity / self.delta_T)
-        self.tree = np.zeros(self.number_of_layers * (self.number_of_layers+1) / 2)
+        self.tree = np.zeros(self.number_of_layers * (self.number_of_layers+1) // 2 + 1)
 
         self.generateArrayPriceTree()
 
-    def getTreeNodeValue(self, layer, number):
-        id = ((layer-1)*layer/2 + 1) + (number - 1)
+    def getTreeId(self, layer, number_of_elem):
+        return ((layer-1)*layer//2 + 1) + (number_of_elem - 1)\
+            
+    def getTreeNodeValue(self, layer, number_of_elem):
+        id = self.getTreeId(layer, number_of_elem)
         return self.tree[id]
     
-    def setTreeNodeValue(self, layer, number, value):
-        id = ((layer-1)*layer/2 + 1) + (number - 1)
+    def setTreeNodeValue(self, layer, number_of_elem, value):
+        id = self.getTreeId(layer, number_of_elem)
         self.tree[id] = value
+
+    def printTree(self):
+        for layer in range(1,self.number_of_layers+1):
+            for numb in range(1,layer+1):
+                print(self.getTreeNodeValue(layer,numb),end="   ")
+            print("\n")
 
     def generateArrayPriceTree(self):
         # Generate recombining tree
@@ -37,14 +47,19 @@ class MarketModel:
                 self.setTreeNodeValue(layer_number,element_number,
                                       self.getTreeNodeValue(layer_number-1,element_number-1) * self.down)
 
-    def priceOption(self, option, node = None):
-        if node == None:
-            node = self.starting_node
-        if node.up == None and node.down == None:
-            return option.value(node.underlying_price)
-        if node.up == None or node.down == None:
-            raise Exception("Node with only one child missing")
+    def priceOption(self,option,layer=1,number_of_elem=1):
+        # set last layer
+        option_value_tree = np.zeros_like(self.tree)
+        for el_numb in range(1,self.number_of_layers + 1):
+            option_value_tree[self.getTreeId(self.number_of_layers, el_numb)] = \
+                option.value(self.getTreeNodeValue(self.number_of_layers, el_numb))
         
-        return np.exp(-self.risk_free_rate * self.delta_T) * \
-            (self.p * self.priceOption(option,node.up) + (1-self.p) * self.priceOption(option,node.down))
+        #set rest of the layers
+        for layer in range(self.number_of_layers - 1, 0, -1):
+            for el_numb in range(1, layer + 1):
+                option_value_tree[self.getTreeId(layer,el_numb)] = \
+                    np.exp(-self.risk_free_rate * self.delta_T) * \
+                        (self.p * option_value_tree[self.getTreeId(layer+1,el_numb)] + \
+                        (1-self.p) * option_value_tree[self.getTreeId(layer+1,el_numb+1)])
         
+        return option_value_tree[self.getTreeId(1,1)]
