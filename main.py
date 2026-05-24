@@ -2,6 +2,7 @@ import numpy as np
 from EuropeanOptions import *
 from MarketModel import MarketModel
 from AnalysisRunner import AnalysisRunner
+from DrawTree import *
 
 S0 = 50
 K = 48
@@ -17,8 +18,7 @@ BinomialMarketModel = MarketModel(SpotPrice = S0,
                                   delta_T = dt, 
                                   max_maturity = T )
 
-# BinomialMarketModel.printTree()
-# print(BinomialMarketModel.getTreeNodeValue(7,4))
+draw_horizontal_tree(array_to_tree(BinomialMarketModel))
 
 E_Call = EuropeanCallOption(Strike = K, Maturity = T)
 E_Put = EuropeanPutOption(Strike = K, Maturity = T)
@@ -40,24 +40,24 @@ print("Difference =", abs((E_Call_Value - E_Put_Value) - (S0 - K * np.exp(-r * T
 
 # analiza cen dla zmieniających się parametrów
 
-# baseline = {
-#     'S0': S0, 'K': K, 'T': T,
-#     'r': r, 'sigma': sigma, 'dt': dt
-# }
+baseline = {
+    'S0': S0, 'K': K, 'T': T,
+    'r': r, 'sigma': sigma, 'dt': dt
+}
 
-# runner = AnalysisRunner(baseline)
+runner = AnalysisRunner(baseline)
 
-# print("Baseline Prices:", runner.get_all_prices(baseline))
+print("Baseline Prices:", runner.get_all_prices(baseline))
 
-# grids = {
-#     'S0': np.arange(30, 71, 2),
-#     'K': np.arange(30, 71, 2),
-#     'sigma': np.arange(0.05, 0.8, 0.05),
-#     'T': np.arange(0.25, 4.26, 0.25)
-# }
+grids = {
+    'S0': np.arange(30, 71, 2),
+    'K': np.arange(30, 71, 2),
+    'sigma': np.arange(0.05, 0.8, 0.05),
+    'T': np.arange(0.25, 4.26, 0.25)
+}
 
-# for param, values in grids.items():
-#     print(f'analysing impact of {param} on the option price...')
-#     data = runner.run_parameter_impact(param, values, output_plot = True)
+for param, values in grids.items():
+    print(f'analysing impact of {param} on the option price...')
+    data = runner.run_parameter_impact(param, values, output_plot = True)
 
 
