@@ -10,28 +10,32 @@ class MarketModel:
         self.delta_T = delta_T
         self.max_maturity = max_maturity
         self.p = (np.exp(self.risk_free_rate * self.delta_T) - self.down) / (self.up - self.down)
-        self.starting_node = Node(self.SpotPrice, layer=0)
+        
+        # Layer from 1 to number of layers, number of element from 1 to layer_number
+        self.number_of_layers = int(self.max_maturity / self.delta_T)
+        self.tree = np.zeros(self.number_of_layers * (self.number_of_layers+1) / 2)
 
-        self.generatePriceTree()
+        self.generateArrayPriceTree()
 
-    def generatePriceTree(self):
-        number_of_layers = int(self.max_maturity / self.delta_T)
+    def getTreeNodeValue(self, layer, number):
+        id = ((layer-1)*layer/2 + 1) + (number - 1)
+        return self.tree[id]
+    
+    def setTreeNodeValue(self, layer, number, value):
+        id = ((layer-1)*layer/2 + 1) + (number - 1)
+        self.tree[id] = value
 
-        array_of_previous_nodes = [self.starting_node]
+    def generateArrayPriceTree(self):
+        # Generate recombining tree
+        self.setTreeNodeValue(1,1,self.SpotPrice)
 
-        for layer in range(1,number_of_layers + 1):
-            array_of_new_nodes = []
-
-            for i in range(layer+1):
-                array_of_new_nodes.append(Node(0,layer))
+        for layer_number in range(2,self.number_of_layers + 1):
+            self.setTreeNodeValue(layer_number,1,
+                                  self.getTreeNodeValue(layer_number-1,1) * self.up)
             
-            for id in range(layer):
-                array_of_previous_nodes[id].setUp(array_of_new_nodes[id])
-                array_of_new_nodes[id].underlying_price = array_of_previous_nodes[id].underlying_price * self.up
-                array_of_previous_nodes[id].setDown(array_of_new_nodes[id+1])
-                array_of_new_nodes[id+1].underlying_price = array_of_previous_nodes[id].underlying_price * self.down
-
-            array_of_previous_nodes = array_of_new_nodes
+            for element_number in range(2,layer_number+1):
+                self.setTreeNodeValue(layer_number,element_number,
+                                      self.getTreeNodeValue(layer_number-1,element_number-1) * self.down)
 
     def priceOption(self, option, node = None):
         if node == None:
