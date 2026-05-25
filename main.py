@@ -10,7 +10,7 @@ K = 48
 T = 2
 sigma = 0.3
 r = 0.02
-dt = 1 / 12 #changed from 1/12, its too much for now, we have too big tree
+dt = 1 / 4 #changed from 1/12, its too much for now, we have too big tree
 
 BinomialMarketModel = MarketModel(SpotPrice = S0, 
                                   up = np.exp(sigma * np.sqrt(dt)),
@@ -48,26 +48,48 @@ print("C - P =", E_Call_Value - E_Put_Value)
 print("S0 - K*exp(-rT) =", S0 - K * np.exp(-r * T))
 print("Difference =", abs((E_Call_Value - E_Put_Value) - (S0 - K * np.exp(-r * T))))
 
+print(np.zeros([5,5]))
+
+draw_horizontal_tree(array_to_tree(BinomialMarketModel))
+draw_horizontal_tree(array_to_tree(BinomialMarketModel), type='Euro Call', Strike = 50)
+draw_horizontal_tree(array_to_tree(BinomialMarketModel), type='American Call', Strike = 50)
+
+
+
 # analiza cen dla zmieniających się parametrów
 
-# baseline = {
-#     'S0': S0, 'K': K, 'T': T,
-#     'r': r, 'sigma': sigma, 'dt': dt
-# }
+baseline = {
+    'S0': S0, 'K': K, 'T': T,
+    'r': r, 'sigma': sigma, 'dt': dt
+}
 
-# runner = AnalysisRunner(baseline)
+runner = AnalysisRunner(baseline)
 
-# print("Baseline Prices:", runner.get_all_prices(baseline))
+print("Baseline Prices:", runner.get_all_prices(baseline))
 
-# grids = {
-#     'S0': np.arange(30, 71, 2),
-#     'K': np.arange(30, 71, 2),
-#     'sigma': np.arange(0.05, 0.8, 0.05),
-#     'T': np.arange(0.25, 4.26, 0.25)
-# }
+grids = {
+    'S0': np.arange(30, 71, 2),
+    'K': np.arange(30, 71, 2),
+    'sigma': np.arange(0.05, 0.8, 0.05),
+    'T': np.arange(0.25, 3.01, 0.25)
+}
 
-# for param, values in grids.items():
-#     print(f'analysing impact of {param} on the option price...')
-#     data = runner.run_parameter_impact(param, values, output_plot = True)
+for param, values in grids.items():
+    print(f'analysing impact of {param} on the option price...')
+    data = runner.run_parameter_impact(param, values, output_plot = True, check_inequalities=True)
+
+baseline = {
+    'S0': S0, 'K': K, 'T': T,
+    'r': r, 'sigma': sigma, 'dt': dt
+}
+
+grids = {
+    'S0': np.arange(30, 70, 2),
+    'r': np.arange(0.0, 0.2, 0.01)
+}
+
+runner = AnalysisRunner(baseline)
+
+runner.plot_surface(grids, 'S0', 'r', 'Put Diff')
 
 
