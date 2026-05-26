@@ -48,6 +48,11 @@ class MarketModel:
                                       self.getTreeNodeValue(layer_number-1,element_number-1) * self.down)
 
     def priceOption(self,option,layer=1,number_of_elem=1):
-        option_value_tree = option.generateOptionValueTree(self)
+        result = option.generateOptionValueTree(self)
+        # Obsługuj zarówno tuple (dla American opcji) jak i pojedynczy array (dla European opcji)
+        if isinstance(result, tuple):
+            option_value_tree, exercise_tree = result
+        else:
+            option_value_tree = result
         
         return option_value_tree[self.getTreeId(layer,number_of_elem)]

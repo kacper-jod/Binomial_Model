@@ -19,7 +19,7 @@ BinomialMarketModel = MarketModel(SpotPrice = S0,
                                   delta_T = dt, 
                                   max_maturity = T )
 
-# draw_horizontal_tree(array_to_tree(BinomialMarketModel))
+draw_horizontal_tree(array_to_tree(BinomialMarketModel))
 
 E_Call = EuropeanCallOption(Strike = K, Maturity = T)
 E_Put = EuropeanPutOption(Strike = K, Maturity = T)
@@ -48,9 +48,13 @@ print("C - P =", E_Call_Value - E_Put_Value)
 print("S0 - K*exp(-rT) =", S0 - K * np.exp(-r * T))
 print("Difference =", abs((E_Call_Value - E_Put_Value) - (S0 - K * np.exp(-r * T))))
 
-draw_horizontal_tree(array_to_tree(BinomialMarketModel))
-draw_horizontal_tree(array_to_tree(BinomialMarketModel), type='Euro Call', Strike = 50)
-draw_horizontal_tree(array_to_tree(BinomialMarketModel), type='American Call', Strike = 50)
+# Rysuj drzewa z informacjami o early exercise
+_, A_Call_exercise = A_Call.generateOptionValueTree(BinomialMarketModel)
+_, A_Put_exercise = A_Put.generateOptionValueTree(BinomialMarketModel)
+
+draw_horizontal_tree(array_to_tree(BinomialMarketModel), type='Euro Call', Strike = K)
+draw_horizontal_tree(array_to_tree(BinomialMarketModel), type='American Call', Strike = K, exercise_tree_data=array_to_exercise_tree(A_Call_exercise, BinomialMarketModel))
+draw_horizontal_tree(array_to_tree(BinomialMarketModel), type='American Put', Strike = K, exercise_tree_data=array_to_exercise_tree(A_Put_exercise, BinomialMarketModel))
 
 
 
