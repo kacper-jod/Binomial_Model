@@ -5,12 +5,12 @@ from MarketModel import MarketModel
 from AnalysisRunner import AnalysisRunner
 from DrawTree import *
 
-S0 = 50
-K = 48
+S0 = 60
+K = 40
 T = 2
 sigma = 0.3
-r = 0.02
-dt = 1 / 12 #changed from 1/12, its too much for now, we have too big tree
+r = 0.1
+dt = 1 / 12  #changed from 1/12, its too much for now, we have too big tree
 
 BinomialMarketModel = MarketModel(SpotPrice = S0, 
                                   up = np.exp(sigma * np.sqrt(dt)),
@@ -19,7 +19,7 @@ BinomialMarketModel = MarketModel(SpotPrice = S0,
                                   delta_T = dt, 
                                   max_maturity = T )
 
-draw_horizontal_tree(array_to_tree(BinomialMarketModel))
+# draw_horizontal_tree(array_to_tree(BinomialMarketModel))
 
 E_Call = EuropeanCallOption(Strike = K, Maturity = T)
 E_Put = EuropeanPutOption(Strike = K, Maturity = T)
@@ -49,12 +49,19 @@ print("S0 - K*exp(-rT) =", S0 - K * np.exp(-r * T))
 print("Difference =", abs((E_Call_Value - E_Put_Value) - (S0 - K * np.exp(-r * T))))
 
 # Rysuj drzewa z informacjami o early exercise
-_, A_Call_exercise = A_Call.generateOptionValueTree(BinomialMarketModel)
-_, A_Put_exercise = A_Put.generateOptionValueTree(BinomialMarketModel)
+A_Call_values, A_Call_exercise = A_Call.generateOptionValueTree(BinomialMarketModel)
+A_Put_values, A_Put_exercise = A_Put.generateOptionValueTree(BinomialMarketModel)
 
-draw_horizontal_tree(array_to_tree(BinomialMarketModel), type='Euro Call', Strike = K)
-draw_horizontal_tree(array_to_tree(BinomialMarketModel), type='American Call', Strike = K, exercise_tree_data=array_to_exercise_tree(A_Call_exercise, BinomialMarketModel))
-draw_horizontal_tree(array_to_tree(BinomialMarketModel), type='American Put', Strike = K, exercise_tree_data=array_to_exercise_tree(A_Put_exercise, BinomialMarketModel))
+# draw_horizontal_tree(array_to_layers(BinomialMarketModel), type='Euro Call', Strike = K)
+# draw_horizontal_tree(
+#     array_to_layers(A_Call_values, BinomialMarketModel), 
+#     array_to_layers(A_Call_exercise, BinomialMarketModel), 
+#     array_to_layers(BinomialMarketModel.tree, BinomialMarketModel))
+
+# draw_horizontal_tree(
+#     array_to_layers(A_Put_values, BinomialMarketModel), 
+#     array_to_layers(A_Put_exercise, BinomialMarketModel),
+#     array_to_layers(BinomialMarketModel.tree, BinomialMarketModel))
 
 
 
@@ -72,10 +79,10 @@ print("Baseline Prices:", runner.get_all_prices(baseline))
 density_of_points = 10 # greater is denser
 
 grids = {
-    'S0': np.arange(30, 71, 2 / density_of_points),
+    'S0': np.arange(0, 100, 2 / density_of_points),
     'K': np.arange(30, 71, 2 / density_of_points),
-    'sigma': np.arange(0.05, 0.8, 0.05 / density_of_points),
-    'T': np.arange(0.25, 3.01, 0.25 / density_of_points)
+    'sigma': np.arange(0.05, 2, 0.05 / density_of_points),
+    'T': np.arange(0.25, 10, 0.25 / density_of_points)
 }
 
 for param, values in grids.items():
@@ -88,8 +95,8 @@ baseline = {
 }
 
 grids = {
-    'S0': np.arange(30, 70, 2),
-    'r': np.arange(0.0, 0.2, 0.01)
+    'S0': np.arange(0, 100, 2),
+    'r': np.arange(0.0, 1, 0.01)
 }
 
 runner = AnalysisRunner(baseline)

@@ -1,25 +1,16 @@
 import tkinter as tk
 import numpy as np
 
-def array_to_tree(market_model):
-    tree_data = []
-    for layer in range(1,market_model.number_of_layers + 1):
-        tree_data.append(
+def array_to_layers(array, market_model):
+    option_value_layers = []
+    for layer in range(1,market_model.number_of_layers+1):
+        option_value_layers.append(
             np.round(
-                market_model.tree[market_model.getTreeId(layer, 1) : market_model.getTreeId(layer+1, 1)],
+                array[market_model.getTreeId(layer, 1) : market_model.getTreeId(layer+1, 1)],
                 2))   
-    return tree_data
+    return option_value_layers
 
-def array_to_exercise_tree(exercise_tree_array, market_model):
-    """Konwertuje flat exercise tree array na listę list (tak jak array_to_tree)"""
-    exercise_data = []
-    for layer in range(1, market_model.number_of_layers + 1):
-        exercise_data.append(
-            exercise_tree_array[market_model.getTreeId(layer, 1) : market_model.getTreeId(layer+1, 1)]
-        )
-    return exercise_data
-
-def draw_horizontal_tree(tree_data, type = 'market', Strike = None, exercise_tree_data = None):
+def draw_horizontal_tree(option_value_layers, exercise_layers, price_layers):
     root = tk.Tk()
     root.title("Drzewo Rekombinujące (Poziomo)")
     root.geometry("1200x700")
@@ -35,13 +26,13 @@ def draw_horizontal_tree(tree_data, type = 'market', Strike = None, exercise_tre
     continuation_color = '#87CEEB'
 
     box_width = 50
-    box_height = 24
+    box_height = 40
     col_width = 80
     row_height = 55
     line_padding = 2
     
-    num_layers = len(tree_data)
-    max_elements = max(len(layer) for layer in tree_data)
+    num_layers = len(option_value_layers)
+    max_elements = max(len(layer) for layer in option_value_layers)
     
     required_width = 60 + num_layers * col_width + 60
     required_height = 60 + (max_elements - 1) * row_height + 60
@@ -70,7 +61,7 @@ def draw_horizontal_tree(tree_data, type = 'market', Strike = None, exercise_tre
     canvas.bind("<MouseWheel>", _on_mousewheel)
     canvas.bind("<Shift-MouseWheel>", _on_shift_mousewheel)
 
-    for col_idx, column in enumerate(tree_data):
+    for col_idx, column in enumerate(option_value_layers):
         x = 60 + col_idx * col_width
         
         total_column_height = (len(column) - 1) * row_height
@@ -79,72 +70,15 @@ def draw_horizontal_tree(tree_data, type = 'market', Strike = None, exercise_tre
         for row_idx, value in enumerate(column):
             y = start_y + row_idx * row_height
 
-            if type == 'market':
-                if col_idx % 2 == 0:
-                    node_color = base_color
-                else:
-                    node_color = base_color2
-
-            elif type == 'American Call':
-                if Strike is None:
-                    raise ValueError('to generate plot of this kind please provide Strike parameter')
-                
-                if exercise_tree_data is not None and col_idx < len(exercise_tree_data) and row_idx < len(exercise_tree_data[col_idx]):
-                    is_early_exercise = exercise_tree_data[col_idx][row_idx] == 1
-                    if is_early_exercise:
-                        node_color = early_exercise_color
-                    else:
-                        node_color = continuation_color
-                else:
-                    if value >= Strike:
-                        node_color = green
-                    else:
-                        node_color = red
-
-            elif type == 'American Put':
-                if Strike is None:
-                    raise ValueError('to generate plot of this kind please provide Strike parameter')
-                
-                if exercise_tree_data is not None and col_idx < len(exercise_tree_data) and row_idx < len(exercise_tree_data[col_idx]):
-                    is_early_exercise = exercise_tree_data[col_idx][row_idx] == 1
-                    if is_early_exercise:
-                        node_color = early_exercise_color
-                    else:
-                        node_color = continuation_color
-                else:
-                    if value <= Strike:
-                        node_color = green
-                    else:
-                        node_color = red
-
-            elif type == 'Euro Call':
-                if Strike is None:
-                    raise ValueError('to generate plot of this kind please provide Strike parameter')
-                if col_idx == len(tree_data) - 1:
-                    if value >= Strike:
-                        node_color = green
-                    else:
-                        node_color = red
-                else:
-                    if col_idx % 2 == 0:
-                        node_color = base_color
-                    else:
-                        node_color = base_color2
-
-            elif type == 'Euro Put':
-                if Strike is None:
-                    raise ValueError('to generate plot of this kind please provide Strike parameter')
-                if col_idx == len(tree_data) - 1:
-                    if value <= Strike:
-                        node_color = '#24D691'
-                    else:
-                        node_color = '#814C41'
-                else:
-                    node_color = "#B5B5B5"
-
-            if col_idx < len(tree_data) - 1:
+            is_early_exercise = exercise_layers[col_idx][row_idx] == 1
+            if is_early_exercise:
+                node_color = early_exercise_color
+            else:
+                node_color = continuation_color
+           
+            if col_idx < len(option_value_layers) - 1:
                 next_x = x + col_width
-                next_column_elements = len(tree_data[col_idx + 1])
+                next_column_elements = len(option_value_layers[col_idx + 1])
                 next_total_height = (next_column_elements - 1) * row_height
                 next_start_y = 60 + (required_height - 120 - next_total_height) / 2
 
@@ -168,11 +102,6 @@ def draw_horizontal_tree(tree_data, type = 'market', Strike = None, exercise_tre
                 fill=node_color, outline=outline_color, width=1
             )
 
-            if type == 'market':
-                canvas.create_text(x, y, text=str(value), font=("Arial", 9, "bold"), fill="black")
-            elif type in ('American Call', 'Euro Call'):
-                canvas.create_text(x, y, text=str(round(max(0, value - Strike), 2)), font=("Arial", 9, "bold"), fill="black")
-            elif type in ('American Put', 'Euro Put'):
-                canvas.create_text(x, y, text=str(round(max(0, Strike-value),2)), font=("Arial", 9, "bold"), fill="black")
-
+            canvas.create_text(x, y, text=str(value) + '\n' + str(price_layers[col_idx][row_idx]), font=("Arial", 9, "bold"), fill="black")
+            
     root.mainloop()
