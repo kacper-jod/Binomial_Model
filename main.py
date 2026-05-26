@@ -10,7 +10,7 @@ K = 48
 T = 2
 sigma = 0.3
 r = 0.02
-dt = 1 / 4 #changed from 1/12, its too much for now, we have too big tree
+dt = 1 / 12 #changed from 1/12, its too much for now, we have too big tree
 
 BinomialMarketModel = MarketModel(SpotPrice = S0, 
                                   up = np.exp(sigma * np.sqrt(dt)),
@@ -48,8 +48,6 @@ print("C - P =", E_Call_Value - E_Put_Value)
 print("S0 - K*exp(-rT) =", S0 - K * np.exp(-r * T))
 print("Difference =", abs((E_Call_Value - E_Put_Value) - (S0 - K * np.exp(-r * T))))
 
-print(np.zeros([5,5]))
-
 draw_horizontal_tree(array_to_tree(BinomialMarketModel))
 draw_horizontal_tree(array_to_tree(BinomialMarketModel), type='Euro Call', Strike = 50)
 draw_horizontal_tree(array_to_tree(BinomialMarketModel), type='American Call', Strike = 50)
@@ -67,11 +65,13 @@ runner = AnalysisRunner(baseline)
 
 print("Baseline Prices:", runner.get_all_prices(baseline))
 
+density_of_points = 10 # greater is denser
+
 grids = {
-    'S0': np.arange(30, 71, 2),
-    'K': np.arange(30, 71, 2),
-    'sigma': np.arange(0.05, 0.8, 0.05),
-    'T': np.arange(0.25, 3.01, 0.25)
+    'S0': np.arange(30, 71, 2 / density_of_points),
+    'K': np.arange(30, 71, 2 / density_of_points),
+    'sigma': np.arange(0.05, 0.8, 0.05 / density_of_points),
+    'T': np.arange(0.25, 3.01, 0.25 / density_of_points)
 }
 
 for param, values in grids.items():
