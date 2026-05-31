@@ -8,10 +8,10 @@ from Hedge import *
 
 S0 = 20
 K = 21
-T = .8
+T = 2
 sigma = 0.3
 r = 0.12
-dt = 1 / 4  #changed from 1/12, its too much for now, we have too big tree
+dt = 1 / 12  #changed from 1/12, its too much for now, we have too big tree
 
 BinomialMarketModel = MarketModel(SpotPrice = S0, 
                                   up = 1.1,#np.exp(sigma * np.sqrt(dt)),
@@ -67,7 +67,7 @@ draw_horizontal_tree(
 #    array_to_layers(BinomialMarketModel.tree, BinomialMarketModel))
 
 hedge_test = Hedge(BinomialMarketModel, A_Call)
-print(hedge_test.generate_hedging_portfolios()[1].delta, hedge_test.generate_hedging_portfolios()[1].alpha)
+#print(hedge_test.generate_hedging_portfolios()[1].delta, hedge_test.generate_hedging_portfolios()[1].alpha)
 
 
 

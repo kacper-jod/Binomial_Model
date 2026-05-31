@@ -8,7 +8,6 @@ class Hedge:
         self.market = market
         self.option = option
         self.tree = [0]
-        print(self.tree)
 
     def generate_hedging_portfolios(self):
         option_values = self.option.generateOptionValueTree(self.market)[0]
